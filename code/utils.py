@@ -1,12 +1,13 @@
 import numpy as np
-from skimage import io, img_as_float, img_as_ubyte
+from skimage import img_as_float, img_as_ubyte
+import imageio.v3 as iio
 import os
 import matplotlib.pyplot as plt
 
 
 def charger_image(chemin):
     """Charge une image et la retourne en float64 [0, 1]."""
-    img = io.imread(chemin)
+    img = iio.imread(chemin)
     img = img_as_float(img)
     return img
 
@@ -19,7 +20,7 @@ def sauvegarder_image(img, chemin, qualite=90):
     if img_clip.ndim == 3 and img_clip.shape[2] == 4:
         img_clip = img_clip[:, :, :3]
     img_uint8 = img_as_ubyte(img_clip)
-    io.imsave(chemin, img_uint8, quality=qualite)
+    iio.imwrite(chemin, img_uint8, quality=qualite)
     print(f"Image sauvegardée : {chemin}")
 
 
