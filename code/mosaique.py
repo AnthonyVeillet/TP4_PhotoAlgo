@@ -3,17 +3,7 @@ from skimage.transform import warp, ProjectiveTransform
 
 
 def calculer_boite_englobante(img_shape, H):
-    """Calcule la boîte englobante de l'image après transformation par H.
-
-    Paramètres
-    ----------
-    img_shape : tuple (h, w)
-    H : ndarray (3, 3)
-
-    Retourne
-    --------
-    min_x, min_y, max_x, max_y : int
-    """
+    """Calcule la boîte englobante de l'image après transformation par H."""
     h, w = img_shape[:2]
     coins = np.array([
         [0, 0, 1],
@@ -41,34 +31,25 @@ def creer_mosaique(images, homographies, idx_ref):
     images : list of ndarray
         Liste d'images (en float [0,1]).
     homographies : dict
-        Dictionnaire {idx_img: H} où H est l'homographie qui transforme
-        l'image idx_img vers le repère de l'image de référence.
-        L'image de référence n'a pas besoin d'entrée (identité implicite).
+        {idx_img: H} où H transforme l'image idx_img vers le repère de référence.
     idx_ref : int
-        Index de l'image de référence dans la liste.
+        Index de l'image de référence.
 
     Retourne
     --------
     mosaique : ndarray
-        L'image mosaïque résultante.
     """
-    # 1. Calculer la boîte englobante globale
     global_min_x, global_min_y = 0, 0
     global_max_x, global_max_y = 0, 0
 
     for i, img in enumerate(images):
-        if i == idx_ref:
-            H = np.eye(3)
-        else:
-            H = homographies[i]
-
+        H = np.eye(3) if i == idx_ref else homographies[i]
         bmin_x, bmin_y, bmax_x, bmax_y = calculer_boite_englobante(img.shape, H)
         global_min_x = min(global_min_x, bmin_x)
         global_min_y = min(global_min_y, bmin_y)
         global_max_x = max(global_max_x, bmax_x)
         global_max_y = max(global_max_y, bmax_y)
 
-    # 2. Translation globale pour ramener dans le positif
     offset_x = -global_min_x
     offset_y = -global_min_y
     T_global = np.array([
@@ -80,17 +61,12 @@ def creer_mosaique(images, homographies, idx_ref):
     out_w = global_max_x - global_min_x + 1
     out_h = global_max_y - global_min_y + 1
 
-    # 3. Déformer chaque image et les fusionner
     n_channels = images[0].shape[2] if images[0].ndim == 3 else 1
     mosaique = np.zeros((out_h, out_w, n_channels), dtype=np.float64)
     poids = np.zeros((out_h, out_w), dtype=np.float64)
 
     for i, img in enumerate(images):
-        if i == idx_ref:
-            H = np.eye(3)
-        else:
-            H = homographies[i]
-
+        H = np.eye(3) if i == idx_ref else homographies[i]
         H_ajuste = T_global @ H
         tform = ProjectiveTransform(matrix=H_ajuste)
 
@@ -102,16 +78,11 @@ def creer_mosaique(images, homographies, idx_ref):
         img_warp = warp(img_3d, tform.inverse, output_shape=(out_h, out_w),
                         mode='constant', cval=0)
 
-        # Masque des pixels valides (non noirs)
-        if img_warp.ndim == 3:
-            masque = np.any(img_warp > 0, axis=2).astype(np.float64)
-        else:
-            masque = (img_warp > 0).astype(np.float64)
+        masque = np.any(img_warp > 0, axis=2).astype(np.float64) if img_warp.ndim == 3 else (img_warp > 0).astype(np.float64)
 
         mosaique += img_warp * masque[:, :, np.newaxis]
         poids += masque
 
-    # Normaliser par le nombre d'images contribuant à chaque pixel
     poids_safe = np.maximum(poids, 1)
     mosaique = mosaique / poids_safe[:, :, np.newaxis]
 
@@ -122,22 +93,7 @@ def creer_mosaique(images, homographies, idx_ref):
 
 
 def creer_mosaique_ponderee(images, homographies, idx_ref):
-    """Crée une mosaïque avec mélange pondéré par la distance au centre.
-
-    Les pixels plus proches du centre de leur image d'origine ont plus de poids,
-    ce qui produit des transitions plus douces dans les zones de chevauchement.
-
-    Paramètres
-    ----------
-    images : list of ndarray
-    homographies : dict {idx: H}
-    idx_ref : int
-
-    Retourne
-    --------
-    mosaique : ndarray
-    """
-    # 1. Boîte englobante globale
+    """Crée une mosaïque avec mélange pondéré par la distance au centre."""
     global_min_x, global_min_y = 0, 0
     global_max_x, global_max_y = 0, 0
 
@@ -177,12 +133,9 @@ def creer_mosaique_ponderee(images, homographies, idx_ref):
         img_warp = warp(img_3d, tform.inverse, output_shape=(out_h, out_w),
                         mode='constant', cval=0)
 
-        # Créer un masque de poids basé sur la distance au centre de l'image
         h_img, w_img = img.shape[:2]
         weight_map = _creer_carte_poids(h_img, w_img)
-        weight_map_3d = weight_map[:, :, np.newaxis] if weight_map.ndim == 2 else weight_map
 
-        # Déformer la carte de poids aussi
         weight_warp = warp(weight_map, tform.inverse, output_shape=(out_h, out_w),
                            mode='constant', cval=0)
 
@@ -199,28 +152,23 @@ def creer_mosaique_ponderee(images, homographies, idx_ref):
 
 
 def _creer_carte_poids(h, w):
-    """Crée une carte de poids linéaire basée sur la distance au bord.
-
-    Les pixels au centre ont un poids de 1, ceux aux bords tendent vers 0.
-    """
+    """Carte de poids linéaire : 1 au centre, ~0 aux bords."""
     x = np.linspace(0, 1, w)
     y = np.linspace(0, 1, h)
-    wx = np.minimum(x, 1 - x) * 2  # 0 aux bords, 1 au centre
+    wx = np.minimum(x, 1 - x) * 2
     wy = np.minimum(y, 1 - y) * 2
     weight = np.outer(wy, wx)
-    # Éviter les poids nuls (minimum petit)
     weight = np.clip(weight, 0.01, 1.0)
     return weight
 
 
 def chainer_homographies(H_paires, idx_ref, n_images):
-    """Chaîne les homographies par paires pour obtenir H_i -> ref pour chaque image.
+    """Chaîne les homographies par paires pour obtenir H_i -> ref.
 
     Paramètres
     ----------
     H_paires : dict
-        {(i, j): H_ij} où H_ij transforme l'image i vers l'image j.
-        Les paires sont consécutives : (0,1), (1,2), (2,3), ...
+        {(i, j): H_ij} homographies entre paires consécutives.
     idx_ref : int
         Index de l'image de référence.
     n_images : int
@@ -228,8 +176,7 @@ def chainer_homographies(H_paires, idx_ref, n_images):
 
     Retourne
     --------
-    homographies : dict
-        {i: H_i_to_ref} pour chaque image i != idx_ref.
+    homographies : dict {i: H_i_to_ref}
     """
     homographies = {}
 
@@ -240,15 +187,12 @@ def chainer_homographies(H_paires, idx_ref, n_images):
         H_cumul = np.eye(3)
 
         if i < idx_ref:
-            # Chaîner de i vers idx_ref en passant par i+1, i+2, ..., idx_ref
             for k in range(i, idx_ref):
                 if (k, k + 1) in H_paires:
                     H_cumul = H_paires[(k, k + 1)] @ H_cumul
                 else:
-                    # Si on a H_{k+1, k}, inverser
                     H_cumul = np.linalg.inv(H_paires[(k + 1, k)]) @ H_cumul
         else:
-            # Chaîner de i vers idx_ref en passant par i-1, i-2, ..., idx_ref
             for k in range(i, idx_ref, -1):
                 if (k, k - 1) in H_paires:
                     H_cumul = H_paires[(k, k - 1)] @ H_cumul

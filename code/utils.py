@@ -52,18 +52,13 @@ def afficher_images_cote_a_cote(images, titres=None, figsize=(18, 6)):
 
 
 def charger_points(chemin):
-    """Charge des points de correspondance depuis un fichier texte.
-    Format attendu : chaque ligne contient x,y séparés par une virgule.
-    Retourne un array numpy (n, 2).
-    """
+    """Charge des points de correspondance depuis un fichier texte."""
     pts = np.loadtxt(chemin, delimiter=",", dtype=np.float64)
     return pts
 
 
 def charger_images_dossier(dossier, extensions=('.jpg', '.jpeg', '.png')):
-    """Charge toutes les images d'un dossier, triées par nom.
-    Retourne une liste de tuples (nom_fichier, image).
-    """
+    """Charge toutes les images d'un dossier, triées par nom."""
     fichiers = sorted([
         f for f in os.listdir(dossier)
         if os.path.splitext(f)[1].lower() in extensions

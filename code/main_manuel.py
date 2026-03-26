@@ -5,6 +5,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+from chemins import (MANUEL_SERIE1_DIR, MANUEL_SERIE1_PTS, MANUEL_SERIE2_DIR,
+                     MANUEL_SERIE3_DIR, OUT_MANUEL, OUT_POINTS_MANUELS)
 from utils import (charger_image, sauvegarder_image, charger_images_dossier,
                    charger_points, dessiner_correspondances, sauvegarder_figure,
                    afficher_image)
@@ -12,13 +14,6 @@ from homographie import calculerHomographie
 from transformation import appliqueTransformation
 from mosaique import creer_mosaique_ponderee, chainer_homographies
 from selection_points import selectionner_et_sauvegarder
-
-# ============================================================
-# Configuration des chemins
-# ============================================================
-BASE_DIR = os.path.join(os.path.dirname(__file__), '..', 'images')
-RAPPORT_DIR = os.path.join(os.path.dirname(__file__), '..', 'rapport', 'images', 'manuel')
-POINTS_DIR = os.path.join(os.path.dirname(__file__), '..', 'points_manuels')
 
 
 def traiter_serie1():
@@ -36,24 +31,22 @@ def traiter_serie1():
     print("SERIE 1 : Appariement avec points fournis")
     print("=" * 60)
 
-    serie_dir = os.path.join(BASE_DIR, '1-PartieManuelle', 'Serie1')
-    pts_dir = os.path.join(serie_dir, 'pts_serie1')
-    save_dir = os.path.join(RAPPORT_DIR, 'serie1')
+    save_dir = os.path.join(OUT_MANUEL, 'serie1')
     os.makedirs(save_dir, exist_ok=True)
 
     # Charger les images (triées : IMG_2415, IMG_2416, IMG_2417)
-    imgs_data = charger_images_dossier(serie_dir)
+    imgs_data = charger_images_dossier(MANUEL_SERIE1_DIR)
     noms = [d[0] for d in imgs_data]
     images = [d[1] for d in imgs_data]
     print(f"Images chargées : {noms}")
 
     # Charger les points de correspondance fournis
     # Paire 1-2 : image 0 (IMG_2415) <-> image 1 (IMG_2416)
-    pts1_12 = charger_points(os.path.join(pts_dir, 'pts1_12.txt'))
-    pts2_12 = charger_points(os.path.join(pts_dir, 'pts2_12.txt'))
+    pts1_12 = charger_points(os.path.join(MANUEL_SERIE1_PTS, 'pts1_12.txt'))
+    pts2_12 = charger_points(os.path.join(MANUEL_SERIE1_PTS, 'pts2_12.txt'))
     # Paire 3-2 : image 2 (IMG_2417) <-> image 1 (IMG_2416)
-    pts3_32 = charger_points(os.path.join(pts_dir, 'pts3_32.txt'))
-    pts2_32 = charger_points(os.path.join(pts_dir, 'pts2_32.txt'))
+    pts3_32 = charger_points(os.path.join(MANUEL_SERIE1_PTS, 'pts3_32.txt'))
+    pts2_32 = charger_points(os.path.join(MANUEL_SERIE1_PTS, 'pts2_32.txt'))
 
     print(f"Points paire 1-2 : {len(pts1_12)} correspondances")
     print(f"Points paire 3-2 : {len(pts3_32)} correspondances")
@@ -68,11 +61,9 @@ def traiter_serie1():
     sauvegarder_figure(fig2, os.path.join(save_dir, 'correspondances_32.jpg'))
 
     # Calculer les homographies
-    # H_02 : transforme image 0 -> image 1 (référence)
     H_02 = calculerHomographie(pts1_12, pts2_12)
     print(f"\nHomographie image 0 -> image 1 :\n{H_02}")
 
-    # H_22 : transforme image 2 -> image 1 (référence)
     H_22 = calculerHomographie(pts3_32, pts2_32)
     print(f"\nHomographie image 2 -> image 1 :\n{H_22}")
 
@@ -90,28 +81,15 @@ def traiter_serie1():
     return mosaique
 
 
-def traiter_serie_manuelle(serie_num, dossier_images, noms_images=None,
-                            n_points=8, idx_ref=None):
-    """Traite une série d'images avec sélection manuelle de points.
-
-    Paramètres
-    ----------
-    serie_num : int
-        Numéro de la série (2 ou 3).
-    dossier_images : str
-        Chemin du dossier contenant les images.
-    n_points : int
-        Nombre de points de correspondance à sélectionner par paire.
-    idx_ref : int or None
-        Index de l'image de référence. Si None, utilise le milieu.
-    """
+def traiter_serie_manuelle(serie_num, dossier_images, n_points=8, idx_ref=None):
+    """Traite une série d'images avec sélection manuelle de points."""
     print(f"\n{'=' * 60}")
     print(f"SERIE {serie_num} : Appariement manuel")
     print("=" * 60)
 
-    save_dir = os.path.join(RAPPORT_DIR, f'serie{serie_num}')
+    save_dir = os.path.join(OUT_MANUEL, f'serie{serie_num}')
     os.makedirs(save_dir, exist_ok=True)
-    pts_save_dir = os.path.join(POINTS_DIR, f'serie{serie_num}')
+    pts_save_dir = os.path.join(OUT_POINTS_MANUELS, f'serie{serie_num}')
     os.makedirs(pts_save_dir, exist_ok=True)
 
     # Charger les images
@@ -167,19 +145,17 @@ def main():
     mosaique1 = traiter_serie1()
 
     # ----- Serie 2 : sélection manuelle -----
-    serie2_dir = os.path.join(BASE_DIR, '1-PartieManuelle', 'Serie2')
     mosaique2 = traiter_serie_manuelle(
         serie_num=2,
-        dossier_images=serie2_dir,
+        dossier_images=MANUEL_SERIE2_DIR,
         n_points=8,
-        idx_ref=0  # Serie2 : 2 images, ref = première image
+        idx_ref=0  # Serie2 : 2 images, ref = première
     )
 
     # ----- Serie 3 : sélection manuelle -----
-    serie3_dir = os.path.join(BASE_DIR, '1-PartieManuelle', 'Serie3')
     mosaique3 = traiter_serie_manuelle(
         serie_num=3,
-        dossier_images=serie3_dir,
+        dossier_images=MANUEL_SERIE3_DIR,
         n_points=8,
         idx_ref=1  # Serie3 : 3 images, ref = milieu
     )

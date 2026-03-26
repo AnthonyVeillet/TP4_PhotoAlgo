@@ -9,38 +9,19 @@ def appariement_automatique(img_ref, img_other, max_ratio=0.8, residual_threshol
                              max_trials=1000):
     """Appariement automatique de deux images via SIFT + RANSAC.
 
-    Paramètres
-    ----------
-    img_ref : ndarray
-        Image de référence (RGB float).
-    img_other : ndarray
-        Autre image (RGB float).
-    max_ratio : float
-        Ratio max pour le test de Lowe dans match_descriptors.
-    residual_threshold : float
-        Seuil de résidu pour RANSAC.
-    max_trials : int
-        Nombre max d'itérations RANSAC.
-
     Retourne
     --------
     H : ndarray (3, 3)
         Homographie transformant img_other vers img_ref.
-    pts_ref : ndarray (n, 2)
-        Points inliers dans img_ref (x, y).
-    pts_other : ndarray (n, 2)
-        Points inliers dans img_other (x, y).
-    all_pts_ref : ndarray (m, 2)
-        Tous les points appariés dans img_ref.
-    all_pts_other : ndarray (m, 2)
-        Tous les points appariés dans img_other.
+    pts_ref, pts_other : ndarray (n, 2)
+        Points inliers (x, y).
+    all_pts_ref, all_pts_other : ndarray (m, 2)
+        Tous les points appariés.
     inliers : ndarray (m,) bool
-        Masque des inliers.
     """
     gray1 = rgb2gray(img_ref)
     gray2 = rgb2gray(img_other)
 
-    # Détection et extraction SIFT
     sift1 = SIFT()
     sift1.detect_and_extract(gray1)
     kp1, desc1 = sift1.keypoints, sift1.descriptors
@@ -49,7 +30,6 @@ def appariement_automatique(img_ref, img_other, max_ratio=0.8, residual_threshol
     sift2.detect_and_extract(gray2)
     kp2, desc2 = sift2.keypoints, sift2.descriptors
 
-    # Appariement des descripteurs
     matches = match_descriptors(
         desc1, desc2,
         cross_check=True,
@@ -58,15 +38,13 @@ def appariement_automatique(img_ref, img_other, max_ratio=0.8, residual_threshol
 
     if len(matches) < 4:
         raise ValueError(
-            f"Pas assez d'appariements ({len(matches)}) pour estimer l'homographie. "
-            "Essayez d'ajuster max_ratio ou vérifiez que les images se chevauchent."
+            f"Pas assez d'appariements ({len(matches)}) pour estimer l'homographie."
         )
 
-    # Convertir de (row, col) = (y, x) à (x, y)
+    # (row, col) -> (x, y)
     all_pts_ref = kp1[matches[:, 0]][:, [1, 0]]
     all_pts_other = kp2[matches[:, 1]][:, [1, 0]]
 
-    # RANSAC pour estimation robuste
     model_robust, inliers = ransac(
         (all_pts_other, all_pts_ref),
         ProjectiveTransform,
@@ -79,7 +57,6 @@ def appariement_automatique(img_ref, img_other, max_ratio=0.8, residual_threshol
         raise RuntimeError("RANSAC a échoué à estimer l'homographie.")
 
     H = model_robust.params
-
     pts_ref = all_pts_ref[inliers]
     pts_other = all_pts_other[inliers]
 
@@ -92,18 +69,10 @@ def appariement_automatique_paires(images, max_ratio=0.8, residual_threshold=2,
                                      max_trials=1000):
     """Apparie automatiquement des images consécutives.
 
-    Paramètres
-    ----------
-    images : list of ndarray
-        Liste d'images (RGB float).
-
     Retourne
     --------
-    H_paires : dict
-        {(i, i+1): H} homographies entre paires consécutives.
-        H transforme l'image i vers l'image i+1.
-    info_paires : dict
-        Infos détaillées pour chaque paire (points, inliers, etc.).
+    H_paires : dict {(i, i+1): H}
+    info_paires : dict avec détails pour chaque paire.
     """
     n = len(images)
     H_paires = {}
@@ -118,11 +87,10 @@ def appariement_automatique_paires(images, max_ratio=0.8, residual_threshold=2,
                 residual_threshold=residual_threshold,
                 max_trials=max_trials
             )
-            # H transforme images[i] vers images[i+1]
             H_paires[(i, i + 1)] = H
             info_paires[(i, i + 1)] = {
-                'pts_ref': pts_ref,       # dans image i+1
-                'pts_other': pts_other,   # dans image i
+                'pts_ref': pts_ref,
+                'pts_other': pts_other,
                 'all_pts_ref': all_ref,
                 'all_pts_other': all_other,
                 'inliers': inliers,

@@ -4,24 +4,7 @@ import os
 
 
 def selectionner_points(img, n_points=8, titre="Cliquez sur les points"):
-    """Interface de sélection manuelle de points sur une image.
-
-    Utilise matplotlib ginput pour sélectionner des points interactivement.
-
-    Paramètres
-    ----------
-    img : ndarray
-        Image sur laquelle sélectionner des points.
-    n_points : int
-        Nombre de points à sélectionner.
-    titre : str
-        Titre de la fenêtre.
-
-    Retourne
-    --------
-    pts : ndarray (n_points, 2)
-        Coordonnées (x, y) des points sélectionnés.
-    """
+    """Interface de sélection manuelle de points sur une image via ginput."""
     fig, ax = plt.subplots(1, 1, figsize=(12, 8))
     ax.imshow(img)
     ax.set_title(f"{titre} ({n_points} points - clic gauche pour sélectionner)")
@@ -36,23 +19,7 @@ def selectionner_points(img, n_points=8, titre="Cliquez sur les points"):
 
 
 def selectionner_correspondances(img1, img2, n_points=8):
-    """Sélectionne des paires de points correspondants sur deux images.
-
-    L'utilisateur sélectionne d'abord n_points sur l'image 1,
-    puis n_points sur l'image 2, dans le même ordre.
-
-    Paramètres
-    ----------
-    img1, img2 : ndarray
-        Les deux images.
-    n_points : int
-        Nombre de paires de correspondances.
-
-    Retourne
-    --------
-    pts1, pts2 : ndarray (n_points, 2)
-        Coordonnées (x, y) dans chaque image.
-    """
+    """Sélectionne des paires de points correspondants sur deux images."""
     print(f"\n=== Sélectionnez {n_points} points sur l'IMAGE 1 ===")
     pts1 = selectionner_points(img1, n_points, "IMAGE 1 : sélectionnez les points")
 
@@ -78,15 +45,13 @@ def charger_points(chemin):
 
 def selectionner_et_sauvegarder(img1, img2, chemin_pts1, chemin_pts2, n_points=8):
     """Sélectionne des correspondances et les sauvegarde.
-
-    Si les fichiers existent déjà, propose de les recharger.
-    """
+    Si les fichiers existent déjà, propose de les recharger."""
     if os.path.exists(chemin_pts1) and os.path.exists(chemin_pts2):
         print(f"Points déjà sauvegardés :")
         print(f"  {chemin_pts1}")
         print(f"  {chemin_pts2}")
         reponse = input("Recharger les points existants ? (o/n) : ").strip().lower()
-        if reponse == 'o' or reponse == 'y' or reponse == '':
+        if reponse in ('o', 'y', ''):
             pts1 = charger_points(chemin_pts1)
             pts2 = charger_points(chemin_pts2)
             print(f"Points rechargés : {len(pts1)} paires")

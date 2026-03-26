@@ -3,25 +3,16 @@ Réchauffement (20%) : Application d'homographies H1 et H2 sur pouliot.jpg.
 """
 import numpy as np
 import os
-import sys
 
+from chemins import IMG_POULIOT, OUT_RECHAUFFEMENT
 from utils import charger_image, sauvegarder_image, afficher_images_cote_a_cote
 from transformation import appliqueTransformation
-
-# ============================================================
-# Configuration des chemins
-# ============================================================
-# Ajuster BASE_DIR selon l'emplacement de votre dossier images/
-BASE_DIR = os.path.join(os.path.dirname(__file__), '..', 'images')
-RAPPORT_DIR = os.path.join(os.path.dirname(__file__), '..', 'rapport', 'images', 'rechauffement')
-
-IMG_PATH = os.path.join(BASE_DIR, '0-Rechauffement', 'pouliot.jpg')
 
 
 def main():
     # Charger l'image
     print("Chargement de pouliot.jpg...")
-    img = charger_image(IMG_PATH)
+    img = charger_image(IMG_POULIOT)
     print(f"  Dimensions : {img.shape}")
 
     # Homographies fournies
@@ -50,10 +41,10 @@ def main():
     print(f"  Offset : {offset_H2}")
 
     # Sauvegarder les résultats
-    os.makedirs(RAPPORT_DIR, exist_ok=True)
-    sauvegarder_image(img, os.path.join(RAPPORT_DIR, 'pouliot_original.jpg'))
-    sauvegarder_image(img_H1, os.path.join(RAPPORT_DIR, 'pouliot_H1.jpg'))
-    sauvegarder_image(img_H2, os.path.join(RAPPORT_DIR, 'pouliot_H2.jpg'))
+    os.makedirs(OUT_RECHAUFFEMENT, exist_ok=True)
+    sauvegarder_image(img, os.path.join(OUT_RECHAUFFEMENT, 'pouliot_original.jpg'))
+    sauvegarder_image(img_H1, os.path.join(OUT_RECHAUFFEMENT, 'pouliot_H1.jpg'))
+    sauvegarder_image(img_H2, os.path.join(OUT_RECHAUFFEMENT, 'pouliot_H2.jpg'))
 
     # Afficher
     afficher_images_cote_a_cote(

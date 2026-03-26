@@ -5,23 +5,16 @@ Consignes :
 - Au moins 2 scènes différentes
 - Minimum 4 photos par scène
 - Prises en tournant la caméra autour d'un même centre de projection
-  (ne pas bouger la position, seulement la rotation)
 """
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+from chemins import IMAGES_DIR, OUT_VOS_IMAGES
 from utils import (charger_image, sauvegarder_image, charger_images_dossier,
                    dessiner_correspondances, sauvegarder_figure, afficher_image)
 from appariement import appariement_automatique_paires
 from mosaique import creer_mosaique_ponderee, chainer_homographies
-
-
-# ============================================================
-# Configuration des chemins
-# ============================================================
-BASE_DIR = os.path.join(os.path.dirname(__file__), '..', 'images')
-RAPPORT_DIR = os.path.join(os.path.dirname(__file__), '..', 'rapport', 'images', 'vos_images')
 
 
 def traiter_scene(scene_num, dossier_images, idx_ref=None):
@@ -30,7 +23,7 @@ def traiter_scene(scene_num, dossier_images, idx_ref=None):
     print(f"SCÈNE {scene_num} : Vos images")
     print("=" * 60)
 
-    save_dir = os.path.join(RAPPORT_DIR, f'scene{scene_num}')
+    save_dir = os.path.join(OUT_VOS_IMAGES, f'scene{scene_num}')
     os.makedirs(save_dir, exist_ok=True)
 
     # Charger les images
@@ -44,7 +37,7 @@ def traiter_scene(scene_num, dossier_images, idx_ref=None):
         idx_ref = n_images // 2
     print(f"Image de référence : {noms[idx_ref]} (index {idx_ref})")
 
-    # Sauvegarder les images individuelles
+    # Sauvegarder les images individuelles dans l'output
     for i, (nom, img) in enumerate(zip(noms, images)):
         sauvegarder_image(img, os.path.join(save_dir, f'img_{i}_{nom}'))
 
@@ -94,12 +87,12 @@ def traiter_scene(scene_num, dossier_images, idx_ref=None):
 def main():
     # TODO: Ajuster les chemins vers vos propres dossiers d'images.
     #       Créez un dossier par scène contenant vos photos (min 4 par scène).
-    #       Exemple :
-    #         images/MesImages/Scene1/  (4+ photos)
-    #         images/MesImages/Scene2/  (4+ photos)
+    #       Exemple dans data/dataInput/images/ :
+    #         MesImages/Scene1/  (4+ photos)
+    #         MesImages/Scene2/  (4+ photos)
 
-    scene1_dir = os.path.join(BASE_DIR, 'MesImages', 'Scene1')
-    scene2_dir = os.path.join(BASE_DIR, 'MesImages', 'Scene2')
+    scene1_dir = os.path.join(IMAGES_DIR, 'MesImages', 'Scene1')
+    scene2_dir = os.path.join(IMAGES_DIR, 'MesImages', 'Scene2')
 
     if not os.path.exists(scene1_dir):
         print(f"ERREUR : Le dossier {scene1_dir} n'existe pas.")

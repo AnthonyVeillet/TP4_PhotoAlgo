@@ -5,41 +5,21 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+from chemins import AUTO_SERIE1_DIR, AUTO_SERIE2_DIR, AUTO_SERIE3_DIR, OUT_AUTOMATIQUE
 from utils import (charger_image, sauvegarder_image, charger_images_dossier,
                    dessiner_correspondances, sauvegarder_figure, afficher_image)
 from appariement import appariement_automatique_paires
 from mosaique import creer_mosaique_ponderee, chainer_homographies
 
 
-# ============================================================
-# Configuration des chemins
-# ============================================================
-BASE_DIR = os.path.join(os.path.dirname(__file__), '..', 'images')
-RAPPORT_DIR = os.path.join(os.path.dirname(__file__), '..', 'rapport', 'images', 'automatique')
-
-
 def traiter_serie_automatique(serie_num, dossier_images, idx_ref=None,
                                 max_ratio=0.8, residual_threshold=2):
-    """Traite une série d'images avec appariement automatique.
-
-    Paramètres
-    ----------
-    serie_num : int
-        Numéro de la série.
-    dossier_images : str
-        Chemin du dossier contenant les images.
-    idx_ref : int or None
-        Index de l'image de référence. Si None, utilise le milieu.
-    max_ratio : float
-        Ratio pour le test de Lowe.
-    residual_threshold : float
-        Seuil pour RANSAC.
-    """
+    """Traite une série d'images avec appariement automatique."""
     print(f"\n{'=' * 60}")
     print(f"SERIE {serie_num} : Appariement automatique (SIFT + RANSAC)")
     print("=" * 60)
 
-    save_dir = os.path.join(RAPPORT_DIR, f'serie{serie_num}')
+    save_dir = os.path.join(OUT_AUTOMATIQUE, f'serie{serie_num}')
     os.makedirs(save_dir, exist_ok=True)
 
     # Charger les images
@@ -62,7 +42,6 @@ def traiter_serie_automatique(serie_num, dossier_images, idx_ref=None,
 
     # Visualiser les appariements
     for (i, j), info in info_paires.items():
-        # Dessiner tous les appariements (inliers en vert, outliers en rouge)
         fig, ax = plt.subplots(1, 1, figsize=(16, 8))
         h1, w1 = images[i].shape[:2]
         h2, w2 = images[j].shape[:2]
@@ -73,8 +52,8 @@ def traiter_serie_automatique(serie_num, dossier_images, idx_ref=None,
         ax.imshow(canvas)
 
         inliers = info['inliers']
-        all_pts_other = info['all_pts_other']  # dans image i
-        all_pts_ref = info['all_pts_ref']      # dans image j
+        all_pts_other = info['all_pts_other']
+        all_pts_ref = info['all_pts_ref']
 
         # Outliers en rouge
         for k in range(len(all_pts_other)):
@@ -113,29 +92,25 @@ def traiter_serie_automatique(serie_num, dossier_images, idx_ref=None,
 
 
 def main():
-    # ----- Serie 1 : Golden Gate -----
-    # 6 images (goldengate-00 à goldengate-05)
-    serie1_dir = os.path.join(BASE_DIR, '2-PartieAutomatique', 'Serie1')
+    # ----- Serie 1 : Golden Gate (6 images) -----
     mosaique1 = traiter_serie_automatique(
         serie_num=1,
-        dossier_images=serie1_dir,
-        idx_ref=None  # milieu automatique -> index 3
+        dossier_images=AUTO_SERIE1_DIR,
+        idx_ref=None  # milieu automatique
     )
 
     # ----- Serie 2 : 4 images -----
-    serie2_dir = os.path.join(BASE_DIR, '2-PartieAutomatique', 'Serie2')
     mosaique2 = traiter_serie_automatique(
         serie_num=2,
-        dossier_images=serie2_dir,
-        idx_ref=None  # milieu automatique -> index 2
+        dossier_images=AUTO_SERIE2_DIR,
+        idx_ref=None
     )
 
     # ----- Serie 3 : 6 images -----
-    serie3_dir = os.path.join(BASE_DIR, '2-PartieAutomatique', 'Serie3')
     mosaique3 = traiter_serie_automatique(
         serie_num=3,
-        dossier_images=serie3_dir,
-        idx_ref=None  # milieu automatique -> index 3
+        dossier_images=AUTO_SERIE3_DIR,
+        idx_ref=None
     )
 
     print("\n" + "=" * 60)
