@@ -1,0 +1,5 @@
+# Ligne de commande pour installer autre Libs par la suite $python -m pip install -r requirements.txt
+
+numpy
+matplotlib
+scikit-image
