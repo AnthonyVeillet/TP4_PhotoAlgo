@@ -1,6 +1,3 @@
-"""
-Réchauffement (20%) : Application d'homographies H1 et H2 sur pouliot.jpg.
-"""
 import numpy as np
 import os
 

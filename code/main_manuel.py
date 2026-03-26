@@ -1,15 +1,3 @@
-"""
-Appariement manuel (45%) : Mosaïques sur les 3 séries de 1-PartieManuelle.
-
-Workflow :
-  1. Exécuter selection_points.py AVANT ce script pour les séries 2 et 3
-     (sélectionner les points de correspondance et les sauvegarder).
-  2. Exécuter ce script pour calculer les homographies et créer les mosaïques.
-
-Pour la Serie1, les points sont fournis dans les données d'entrée.
-Pour les Series 2 et 3, les points doivent avoir été sauvegardés par
-selection_points.py dans data/dataOutput/points_manuels/serie2/ et serie3/.
-"""
 import numpy as np
 import os
 from pathlib import Path

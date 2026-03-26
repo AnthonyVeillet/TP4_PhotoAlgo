@@ -1,29 +1,22 @@
-"""
-Vos images (20%) : Tester l'algorithme automatique sur vos propres images.
-
-Consignes :
-- Au moins 2 scènes différentes
-- Minimum 4 photos par scène
-- Prises en tournant la caméra autour d'un même centre de projection
-"""
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-from chemins import IMAGES_DIR, OUT_VOS_IMAGES
+from chemins import PERSO_DIR, OUT_PERSO_IMAGES
 from utils import (charger_image, sauvegarder_image, charger_images_dossier,
-                   dessiner_correspondances, sauvegarder_figure, afficher_image)
+                   dessiner_correspondances, sauvegarder_figure, afficher_image,
+                   img_to_rgb)
 from appariement import appariement_automatique_paires
 from mosaique import creer_mosaique_ponderee, chainer_homographies
 
 
 def traiter_scene(scene_num, dossier_images, idx_ref=None):
-    """Traite une scène personnelle avec appariement automatique."""
+    # Traite une scène personnelle avec appariement automatique
     print(f"\n{'=' * 60}")
-    print(f"SCÈNE {scene_num} : Vos images")
+    print(f"SCÈNE {scene_num} : Images")
     print("=" * 60)
 
-    save_dir = os.path.join(OUT_VOS_IMAGES, f'scene{scene_num}')
+    save_dir = os.path.join(OUT_PERSO_IMAGES, f'scene{scene_num}')
     os.makedirs(save_dir, exist_ok=True)
 
     # Charger les images
@@ -51,8 +44,8 @@ def traiter_scene(scene_num, dossier_images, idx_ref=None):
         h2, w2 = images[j].shape[:2]
         h_max = max(h1, h2)
         canvas = np.zeros((h_max, w1 + w2, 3))
-        canvas[:h1, :w1] = images[i][:, :, :3]
-        canvas[:h2, w1:] = images[j][:, :, :3]
+        canvas[:h1, :w1] = img_to_rgb(images[i])
+        canvas[:h2, w1:] = img_to_rgb(images[j])
         ax.imshow(canvas)
 
         inliers = info['inliers']
@@ -71,7 +64,7 @@ def traiter_scene(scene_num, dossier_images, idx_ref=None):
         plt.tight_layout()
         sauvegarder_figure(fig, os.path.join(save_dir, f'appariements_{i}_{j}.jpg'))
 
-    # Chaîner les homographies
+    # Chainer les homographies
     homographies = chainer_homographies(H_paires, idx_ref, n_images)
 
     # Créer la mosaïque
@@ -85,19 +78,14 @@ def traiter_scene(scene_num, dossier_images, idx_ref=None):
 
 
 def main():
-    # TODO: Ajuster les chemins vers vos propres dossiers d'images.
-    #       Créez un dossier par scène contenant vos photos (min 4 par scène).
-    #       Exemple dans data/dataInput/images/ :
-    #         MesImages/Scene1/  (4+ photos)
-    #         MesImages/Scene2/  (4+ photos)
 
-    scene1_dir = os.path.join(IMAGES_DIR, 'MesImages', 'Scene1')
-    scene2_dir = os.path.join(IMAGES_DIR, 'MesImages', 'Scene2')
+    scene1_dir = os.path.join(PERSO_DIR, 'Scene1')
+    scene2_dir = os.path.join(PERSO_DIR, 'Scene2')
 
     if not os.path.exists(scene1_dir):
         print(f"ERREUR : Le dossier {scene1_dir} n'existe pas.")
-        print("Créez vos dossiers de scènes avec au moins 4 photos chacun.")
-        print("Ajustez les chemins dans ce script.")
+        print("Créez vos sous-dossiers Scene1/ et Scene2/ dans :")
+        print(f"  {PERSO_DIR}")
         return
 
     mosaique1 = traiter_scene(1, scene1_dir)
@@ -105,7 +93,7 @@ def main():
     if os.path.exists(scene2_dir):
         mosaique2 = traiter_scene(2, scene2_dir)
 
-    print("\nTraitement de vos images terminé !")
+    print("\nTraitement d'images terminé !")
 
 
 if __name__ == '__main__':

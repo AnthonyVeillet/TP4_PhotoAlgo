@@ -61,6 +61,9 @@ def creer_mosaique(images, homographies, idx_ref):
     out_w = global_max_x - global_min_x + 1
     out_h = global_max_y - global_min_y + 1
 
+    # Normaliser : RGBA -> RGB
+    images = [img[:, :, :3] if (img.ndim == 3 and img.shape[2] == 4) else img for img in images]
+
     n_channels = images[0].shape[2] if images[0].ndim == 3 else 1
     mosaique = np.zeros((out_h, out_w, n_channels), dtype=np.float64)
     poids = np.zeros((out_h, out_w), dtype=np.float64)
@@ -115,6 +118,9 @@ def creer_mosaique_ponderee(images, homographies, idx_ref):
 
     out_w = global_max_x - global_min_x + 1
     out_h = global_max_y - global_min_y + 1
+
+    # Normaliser : RGBA -> RGB
+    images = [img[:, :, :3] if (img.ndim == 3 and img.shape[2] == 4) else img for img in images]
 
     n_channels = images[0].shape[2] if images[0].ndim == 3 else 1
     mosaique = np.zeros((out_h, out_w, n_channels), dtype=np.float64)

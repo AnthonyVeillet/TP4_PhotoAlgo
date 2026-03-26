@@ -3,22 +3,7 @@ from skimage.transform import estimate_transform
 
 
 def calculerHomographie(im1_pts, im2_pts):
-    """Calcule l'homographie H telle que im2_pts ~ H @ im1_pts.
 
-    Utilise skimage.transform.estimate_transform avec le modèle 'projective'.
-
-    Paramètres
-    ----------
-    im1_pts : ndarray (n, 2)
-        Coordonnées (x, y) des points dans l'image source.
-    im2_pts : ndarray (n, 2)
-        Coordonnées (x, y) des points correspondants dans l'image destination.
-
-    Retourne
-    --------
-    H : ndarray (3, 3)
-        Matrice d'homographie.
-    """
     assert len(im1_pts) >= 4, "Il faut au minimum 4 paires de correspondances."
     assert len(im1_pts) == len(im2_pts), "Le nombre de points doit être identique."
 
@@ -28,7 +13,7 @@ def calculerHomographie(im1_pts, im2_pts):
 
 
 def normaliser_points(pts):
-    """Normalise les points selon la méthode de Hartley."""
+    #Normalise les points selon la méthode de Hartley
     mean = pts.mean(axis=0)
     std = pts.std(axis=0)
     std[std < 1e-10] = 1
@@ -47,7 +32,7 @@ def normaliser_points(pts):
 
 
 def calculerHomographie_manuelle(im1_pts, im2_pts):
-    """Calcule l'homographie manuellement via le système Ah=0 et SVD."""
+    # Calcule l'homographie manuellement via le système Ah=0 et SVD
     assert len(im1_pts) >= 4
 
     src_norm, T_src = normaliser_points(im1_pts)

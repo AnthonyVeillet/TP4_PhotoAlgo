@@ -1,33 +1,127 @@
-tp4/
+TP4/
 ├── code/
-│   ├── main_rechauffement.py      # Réchauffement : applique H1 et H2 à pouliot.jpg
-│   ├── main_manuel.py             # Appariement manuel : mosaïques des 3 séries
-│   ├── main_automatique.py        # Appariement automatique : SIFT + RANSAC
-│   ├── main_vos_images.py         # Vos propres images (TODO: ajuster les chemins)
-│   ├── selection_points.py        # Outil de sélection manuelle de points (matplotlib)
+│   ├── chemins.py                 # Configuration centralisée de tous les chemins
+│   ├── utils.py                   # Utilitaires (chargement, sauvegarde, affichage, img_to_rgb)
 │   ├── transformation.py          # appliqueTransformation(img, H)
 │   ├── homographie.py             # calculerHomographie(im1_pts, im2_pts)
-│   ├── mosaique.py                # Création et fusion de mosaïques
-│   └── utils.py                   # Utilitaires (chargement, sauvegarde, affichage)
+│   ├── mosaique.py                # Création et fusion de mosaïques (moyenne, pondérée)
+│   ├── appariement.py             # Appariement automatique SIFT + RANSAC
+│   ├── selection_points.py        # Outil de sélection manuelle de points (adapté du TP3)
+│   ├── main_rechauffement.py      # [EXÉCUTER] Réchauffement : H1 et H2 sur pouliot.jpg
+│   ├── main_manuel.py             # [EXÉCUTER] Appariement manuel : 3 séries
+│   ├── main_automatique.py        # [EXÉCUTER] Appariement automatique : 3 séries
+│   └── main_vos_images.py         # [EXÉCUTER] Vos propres images : 2 scènes
 │
-├── images/                        # (dézipper images.zip ici)
-│   ├── 0-Rechauffement/
-│   │   └── pouliot.jpg
-│   ├── 1-PartieManuelle/
-│   │   ├── Serie1/ (IMG_2415-2417 + pts_serie1/)
-│   │   ├── Serie2/ (IMG_2425-2426)
-│   │   └── Serie3/ (IMG_2409-2411)
-│   ├── 2-PartieAutomatique/
-│   │   ├── Serie1/ (goldengate-00 à 05)
-│   │   ├── Serie2/ (IMG_2415-2418)
-│   │   └── Serie3/ (IMG_2434-2468)
-│   └── 3-ProjCylindrique/         # (bonus seulement)
-│       ├── Serie1/
-│       └── Serie2/
+├── data/
+│   ├── dataInput/
+│   │   ├── images/                        # <- images.zip dézippé ici
+│   │   │   ├── 0-Rechauffement/
+│   │   │   │   └── pouliot.jpg
+│   │   │   ├── 1-PartieManuelle/
+│   │   │   │   ├── Serie1/
+│   │   │   │   │   ├── IMG_2415.jpg
+│   │   │   │   │   ├── IMG_2416.jpg
+│   │   │   │   │   ├── IMG_2417.jpg
+│   │   │   │   │   └── pts_serie1/
+│   │   │   │   │       ├── pts1_12.txt
+│   │   │   │   │       ├── pts2_12.txt
+│   │   │   │   │       ├── pts2_32.txt
+│   │   │   │   │       └── pts3_32.txt
+│   │   │   │   ├── Serie2/
+│   │   │   │   │   ├── IMG_2425.jpg
+│   │   │   │   │   └── IMG_2426.jpg
+│   │   │   │   └── Serie3/
+│   │   │   │       ├── IMG_2409.jpg
+│   │   │   │       ├── IMG_2410.jpg
+│   │   │   │       └── IMG_2411.jpg
+│   │   │   ├── 2-PartieAutomatique/
+│   │   │   │   ├── Serie1/
+│   │   │   │   │   ├── goldengate-00.png
+│   │   │   │   │   ├── goldengate-01.png
+│   │   │   │   │   ├── goldengate-02.png
+│   │   │   │   │   ├── goldengate-03.png
+│   │   │   │   │   ├── goldengate-04.png
+│   │   │   │   │   └── goldengate-05.png
+│   │   │   │   ├── Serie2/
+│   │   │   │   │   ├── IMG_2415.jpg
+│   │   │   │   │   ├── IMG_2416.jpg
+│   │   │   │   │   ├── IMG_2417.jpg
+│   │   │   │   │   └── IMG_2418.jpg
+│   │   │   │   └── Serie3/
+│   │   │   │       ├── IMG_2434.jpg
+│   │   │   │       ├── IMG_2435.jpg
+│   │   │   │       ├── IMG_2436.jpg
+│   │   │   │       ├── IMG_2466.jpg
+│   │   │   │       ├── IMG_2467.jpg
+│   │   │   │       └── IMG_2468.jpg
+│   │   │   └── 3-ProjCylindrique/         # (bonus seulement)
+│   │   │       ├── Serie1/ (15 images)
+│   │   │       └── Serie2/ (15 images)
+│   │   │
+│   │   └── 4-ImagePerso/                  # <- Vos propres photos ici
+│   │       ├── Scene1/                    #    (min 4 photos par scène)
+│   │       │   ├── RailJam_001.jpg
+│   │       │   ├── RailJam_002.jpg
+│   │       │   ├── RailJam_003.jpg
+│   │       │   ├── RailJam_004.jpg
+│   │       │   ├── RailJam_005.jpg
+│   │       │   └── RailJam_006.jpg
+│   │       └── Scene2/
+│   │           ├── Pont_pano_x_001.jpg
+│   │           ├── Pont_pano_x_002.jpg
+│   │           ├── Pont_pano_x_003.jpg
+│   │           ├── Pont_pano_x_004.jpg
+│   │           ├── Pont_pano_x_005.jpg
+│   │           └── Pont_pano_x_006.jpg
+│   │
+│   └── dataOutput/                        # <- Tous les résultats générés
+│       ├── rechauffement/                 #    par main_rechauffement.py
+│       │   ├── pouliot_original.jpg
+│       │   ├── pouliot_H1.jpg
+│       │   └── pouliot_H2.jpg
+│       ├── manuel/                        #    par main_manuel.py
+│       │   ├── serie1/
+│       │   │   ├── correspondances_12.jpg
+│       │   │   ├── correspondances_32.jpg
+│       │   │   └── mosaique_serie1.jpg
+│       │   ├── serie2/
+│       │   │   ├── correspondances_0_1.jpg
+│       │   │   └── mosaique_serie2.jpg
+│       │   └── serie3/
+│       │       ├── correspondances_0_1.jpg
+│       │       ├── correspondances_1_2.jpg
+│       │       └── mosaique_serie3.jpg
+│       ├── automatique/                   #    par main_automatique.py
+│       │   ├── serie1/
+│       │   │   ├── appariements_0_1.jpg
+│       │   │   ├── ...
+│       │   │   └── mosaique_serie1.jpg
+│       │   ├── serie2/
+│       │   │   └── ...
+│       │   └── serie3/
+│       │       └── ...
+│       ├── ImagePerso/                    #    par main_vos_images.py
+│       │   ├── scene1/
+│       │   │   ├── img_0_photo1.jpg
+│       │   │   ├── appariements_0_1.jpg
+│       │   │   ├── ...
+│       │   │   └── mosaique_scene1.jpg
+│       │   └── scene2/
+│       │       └── ...
+│       └── points_manuels/                #    par selection_points.py
+│           ├── serie2/
+│           │   ├── pts_IMG_2425_vers_IMG_2426.txt
+│           │   └── pts_IMG_2426_vers_IMG_2425.txt
+│           └── serie3/
+│               ├── pts_IMG_2409_vers_IMG_2410.txt
+│               ├── pts_IMG_2410_vers_IMG_2409.txt
+│               ├── pts_IMG_2410_vers_IMG_2411.txt
+│               └── pts_IMG_2411_vers_IMG_2410.txt
 │
 └── rapport/
-    ├── index.html                 # Page principale du rapport
-    └── images/                    # Images générées par les scripts
-        ├── rechauffement/
+    ├── index.html                         # Page principale du rapport
+    └── images/                            # Copier ici les images de dataOutput
+        ├── rechauffement/                 #   pour le rapport
         ├── manuel/
-        └── automatique/
+        ├── automatique/
+        └── ImagePerso/

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📸 Rapport TP4 — Panoramas</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap');
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #e8e8e8;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    header {
+      text-align: center;
+      padding: 40px 0;
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .author {
+      font-size: 1.15em;
+      color: #b0b0b0;
+      margin-bottom: 6px;
+    }
+
+    .date-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.1);
+      padding: 8px 20px;
+      border-radius: 20px;
+      margin-top: 12px;
+      font-size: 0.9em;
+      color: #b0b0b0;
+    }
+
+    .image-section {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 40px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .image-section h2 {
+      color: #778da9;
+      font-size: 1.6em;
+      margin: 0 0 25px 0;
+      padding-bottom: 15px;
+      border-bottom: 2px solid rgba(119, 141, 169, 0.25);
+    }
+
+    h3 { color: #e0e1dd; font-size: 1.3em; margin: 26px 0 14px 0; }
+    h4 { margin: 18px 0 10px 0; color: #dbe2ef; }
+
+    .figure-container {
+      text-align: center;
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+    }
+
+    .figure-container img {
+      max-width: 100%;
+      max-height: 600px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .figure-container img:hover {
+      transform: scale(1.015);
+      box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+    }
+
+    .figure-caption {
+      margin-top: 10px;
+      font-style: italic;
+      color: #a0a0a0;
+      font-size: 0.9em;
+    }
+
+    .comparison-images {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 10px 0;
+    }
+
+    .comparison-image-item {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .comparison-image-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+
+    .comparison-image-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .comparison-image-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+      color: #fff;
+      padding: 12px 8px 8px;
+      font-size: 0.85em;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .text-block, .decl-ia {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 18px;
+      margin: 18px 0 0 0;
+    }
+
+    .decl-ia { border-left: 4px solid #778da9; }
+
+    .text-block-title {
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 10px;
+    }
+
+    .text-content {
+      color: #d0d0d0;
+      line-height: 1.7;
+      font-size: 1em;
+    }
+
+    .soft-hr {
+      border: none;
+      height: 1px;
+      background: rgba(255,255,255,0.12);
+      margin: 22px 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: #777;
+      font-size: 0.95em;
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.92);
+      animation: fadeIn 0.2s;
+    }
+
+    .lightbox.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-content {
+      max-width: 95vw;
+      max-height: 95vh;
+      padding: 18px;
+    }
+
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 95vh;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 16px; right: 30px;
+      color: #fff;
+      font-size: 44px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .lightbox-close:hover { color: #ffc107; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 900px) {
+      .comparison-images { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+    <span class="lightbox-close">&times;</span>
+    <div class="lightbox-content">
+      <img id="lightbox-img" src="" alt="">
+    </div>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>📸 Rapport TP4 — Panoramas</h1>
+      <div class="author">Anthony Veillet</div>
+      <div class="date-badge">Généré le 26 March 2026 à 00:12</div>
+    </header>
+
+    
+    <section class="image-section">
+        <h2>1. Réchauffement (20%)</h2>
+        
+    <div class="text-block">
+        <div class="text-block-title">📝 Approche</div>
+        <div class="text-content">La fonction appliqueTransformation applique une homographie H à une image en utilisant skimage.transform.warp.<br>
+Pour gérer les coordonnées négatives ou dépassant l'image originale, on transforme d'abord les 4 coins de l'image avec H<br>
+afin de calculer la boîte englobante du résultat. On détermine ensuite un offset de translation pour ramener toutes les<br>
+coordonnées dans le positif, et on ajuste H en conséquence (H_ajusté = T @ H). L'image de sortie est dimensionnée<br>
+selon la boîte englobante complète, ce qui garantit qu'aucune partie de l'image transformée n'est coupée.</div>
+    </div><h3>Image originale</h3>
+    <div class="figure-container">
+        <img src="../dataOutput/rechauffement/pouliot_original.jpg" alt="pouliot.jpg — Image originale" data-fullsize="../dataOutput/rechauffement/pouliot_original.jpg"
+             onclick="openLightbox(this)" style="max-width:80%;" />
+        <p class="figure-caption">pouliot.jpg — Image originale</p>
+    </div><h3>Résultat avec H1</h3>
+    <div class="figure-container">
+        <img src="../dataOutput/rechauffement/pouliot_H1.jpg" alt="pouliot.jpg transformée par H1" data-fullsize="../dataOutput/rechauffement/pouliot_H1.jpg"
+             onclick="openLightbox(this)" style="max-width:80%;" />
+        <p class="figure-caption">pouliot.jpg transformée par H1</p>
+    </div><h3>Résultat avec H2</h3>
+    <div class="figure-container">
+        <img src="../dataOutput/rechauffement/pouliot_H2.jpg" alt="pouliot.jpg transformée par H2" data-fullsize="../dataOutput/rechauffement/pouliot_H2.jpg"
+             onclick="openLightbox(this)" style="max-width:80%;" />
+        <p class="figure-caption">pouliot.jpg transformée par H2</p>
+    </div>
+    <div class="text-block">
+        <div class="text-block-title">📝 Commentaires</div>
+        <div class="text-content">H1 produit une image cisaillée vers la gauche avec un décalage négatif en x — on voit que l'image finale est plus large<br>
+car le code a ajouté un offset pour conserver les pixels aux coordonnées négatives. H2 applique une rotation importante<br>
+qui fait pivoter l'image d'environ 90 degrés. Les deux résultats montrent que la gestion des bordures fonctionne<br>
+correctement : aucune partie de l'image transformée n'est perdue.</div>
+    </div>
+    </section>
+    
+    <section class="image-section">
+        <h2>2. Appariement manuel (45%)</h2>
+        
+    <div class="text-block">
+        <div class="text-block-title">📝 Approche</div>
+        <div class="text-content">L'algorithme suit 4 étapes : (1) sélection manuelle de points de correspondance entre paires d'images consécutives<br>
+à l'aide d'un outil matplotlib (ginput), (2) calcul de l'homographie H pour chaque paire via<br>
+skimage.transform.estimate_transform('projective'), (3) chaînage des homographies vers une image de référence<br>
+centrale pour minimiser les distorsions, et (4) fusion des images déformées par moyenne pondérée — les pixels<br>
+proches du centre de leur image d'origine ont plus de poids, ce qui donne des transitions douces dans les zones<br>
+de chevauchement.</div>
+    </div><h3>Série 1 — Points fournis</h3><h4>Correspondances</h4>
+    <div class="comparison-images">
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/manuel/serie1/correspondances_12.jpg" alt="Correspondances images 1↔2" data-fullsize="../dataOutput/manuel/serie1/correspondances_12.jpg">
+            <div class="comparison-image-label">Correspondances images 1↔2</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/manuel/serie1/correspondances_32.jpg" alt="Correspondances images 3↔2" data-fullsize="../dataOutput/manuel/serie1/correspondances_32.jpg">
+            <div class="comparison-image-label">Correspondances images 3↔2</div>
+        </div>
+    </div><h4>Mosaïque résultante</h4>
+    <div class="figure-container">
+        <img src="../dataOutput/manuel/serie1/mosaique_serie1.jpg" alt="Mosaïque Serie 1 — Appariement manuel" data-fullsize="../dataOutput/manuel/serie1/mosaique_serie1.jpg"
+             onclick="openLightbox(this)" style="max-width:90%;" />
+        <p class="figure-caption">Mosaïque Serie 1 — Appariement manuel</p>
+    </div>
+    <div class="text-block">
+        <div class="text-block-title">📝 Commentaires — Série 1</div>
+        <div class="text-content">La mosaïque de la série 1 donne un bon résultat grâce aux points fournis qui sont précis. L'image de référence<br>
+est l'image du milieu, ce qui minimise la déformation des images latérales. Les transitions entre les images<br>
+sont relativement douces grâce au mélange pondéré par distance au centre. On observe quelques légers artefacts<br>
+aux jonctions, typiques de la différence d'exposition entre les photos.</div>
+    </div><hr class='soft-hr' /><h3>Série 2 — Points sélectionnés manuellement</h3><h4>Correspondances</h4>
+    <div class="figure-container">
+        <img src="../dataOutput/manuel/serie2/correspondances_0_1.jpg" alt="Correspondances images 0↔1" data-fullsize="../dataOutput/manuel/serie2/correspondances_0_1.jpg"
+             onclick="openLightbox(this)" style="max-width:90%;" />
+        <p class="figure-caption">Correspondances images 0↔1</p>
+    </div><h4>Mosaïque résultante</h4>
+    <div class="figure-container">
+        <img src="../dataOutput/manuel/serie2/mosaique_serie2.jpg" alt="Mosaïque Serie 2 — Appariement manuel" data-fullsize="../dataOutput/manuel/serie2/mosaique_serie2.jpg"
+             onclick="openLightbox(this)" style="max-width:90%;" />
+        <p class="figure-caption">Mosaïque Serie 2 — Appariement manuel</p>
+    </div>
+    <div class="text-block">
+        <div class="text-block-title">📝 Commentaires — Série 2</div>
+        <div class="text-content">Le panorama de la série 2 montre un fleuve gelé avec la rive opposée visible à l'horizon. Le résultat est<br>
+convaincant avec seulement 2 images. On observe une légère déformation en forme de « bow-tie » sur les bords,<br>
+typique de la projection planaire quand le champ de vue commence à être large. Les transitions entre les deux<br>
+images sont fluides grâce au mélange pondéré.</div>
+    </div><hr class='soft-hr' /><h3>Série 3 — Points sélectionnés manuellement</h3><h4>Correspondances</h4>
+    <div class="comparison-images">
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/manuel/serie3/correspondances_0_1.jpg" alt="Correspondances images 0↔1" data-fullsize="../dataOutput/manuel/serie3/correspondances_0_1.jpg">
+            <div class="comparison-image-label">Correspondances images 0↔1</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/manuel/serie3/correspondances_1_2.jpg" alt="Correspondances images 1↔2" data-fullsize="../dataOutput/manuel/serie3/correspondances_1_2.jpg">
+            <div class="comparison-image-label">Correspondances images 1↔2</div>
+        </div>
+    </div><h4>Mosaïque résultante</h4>
+    <div class="figure-container">
+        <img src="../dataOutput/manuel/serie3/mosaique_serie3.jpg" alt="Mosaïque Serie 3 — Appariement manuel" data-fullsize="../dataOutput/manuel/serie3/mosaique_serie3.jpg"
+             onclick="openLightbox(this)" style="max-width:90%;" />
+        <p class="figure-caption">Mosaïque Serie 3 — Appariement manuel</p>
+    </div>
+    <div class="text-block">
+        <div class="text-block-title">📝 Commentaires — Série 3</div>
+        <div class="text-content">La mosaïque de la série 3 assemble correctement les 3 images en un panorama d'un parc enneigé vu depuis un pont.<br>
+L'image de référence centrale minimise bien les distorsions : les bâtiments restent droits au centre tandis que<br>
+les bords montrent la courbure typique de la projection planaire. Les joints entre les images sont peu visibles,<br>
+ce qui confirme la bonne qualité des points de correspondance sélectionnés manuellement.</div>
+    </div>
+    </section>
+    
+    <section class="image-section">
+        <h2>3. Appariement automatique (15%)</h2>
+        
+    <div class="text-block">
+        <div class="text-block-title">📝 Approche</div>
+        <div class="text-content">L'appariement manuel est remplacé par une détection automatique en 3 étapes : (1) extraction de points d'intérêt<br>
+et descripteurs avec SIFT (skimage.feature.SIFT), (2) appariement des descripteurs entre images consécutives avec<br>
+match_descriptors (cross_check + ratio de Lowe à 0.8), et (3) estimation robuste de l'homographie par RANSAC<br>
+(skimage.measure.ransac) qui élimine les faux appariements (outliers). Les homographies sont ensuite chaînées<br>
+vers l'image de référence centrale, puis la mosaïque est créée avec le même mélange pondéré que la partie manuelle.</div>
+    </div><h3>Série 1 — Golden Gate</h3><h4>Appariements automatiques (SIFT + RANSAC)</h4><div class="comparison-images" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie1/appariements_0_1.jpg" alt="Appariements 0↔1" data-fullsize="../dataOutput/automatique/serie1/appariements_0_1.jpg">
+            <div class="comparison-image-label">Appariements 0↔1</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie1/appariements_1_2.jpg" alt="Appariements 1↔2" data-fullsize="../dataOutput/automatique/serie1/appariements_1_2.jpg">
+            <div class="comparison-image-label">Appariements 1↔2</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie1/appariements_2_3.jpg" alt="Appariements 2↔3" data-fullsize="../dataOutput/automatique/serie1/appariements_2_3.jpg">
+            <div class="comparison-image-label">Appariements 2↔3</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie1/appariements_3_4.jpg" alt="Appariements 3↔4" data-fullsize="../dataOutput/automatique/serie1/appariements_3_4.jpg">
+            <div class="comparison-image-label">Appariements 3↔4</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie1/appariements_4_5.jpg" alt="Appariements 4↔5" data-fullsize="../dataOutput/automatique/serie1/appariements_4_5.jpg">
+            <div class="comparison-image-label">Appariements 4↔5</div>
+        </div></div><h4>Mosaïque résultante</h4>
+    <div class="figure-container">
+        <img src="../dataOutput/automatique/serie1/mosaique_serie1.jpg" alt="Mosaïque Serie 1 — Golden Gate (automatique)" data-fullsize="../dataOutput/automatique/serie1/mosaique_serie1.jpg"
+             onclick="openLightbox(this)" style="max-width:95%;" />
+        <p class="figure-caption">Mosaïque Serie 1 — Golden Gate (automatique)</p>
+    </div>
+    <div class="text-block">
+        <div class="text-block-title">📝 Commentaires — Série 1 (Golden Gate)</div>
+        <div class="text-content">La mosaïque du Golden Gate fonctionne bien malgré le fait que les images soient en niveaux de gris. SIFT détecte<br>
+de nombreux points d'intérêt sur les structures du pont et le paysage. Le nombre élevé d'inliers par paire<br>
+(plusieurs centaines) confirme la robustesse de l'estimation. Le panorama final couvre un large champ de vue<br>
+avec des transitions cohérentes entre les 6 images.</div>
+    </div><hr class='soft-hr' /><h3>Série 2</h3><h4>Appariements automatiques</h4><div class="comparison-images" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie2/appariements_0_1.jpg" alt="Appariements 0↔1" data-fullsize="../dataOutput/automatique/serie2/appariements_0_1.jpg">
+            <div class="comparison-image-label">Appariements 0↔1</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie2/appariements_1_2.jpg" alt="Appariements 1↔2" data-fullsize="../dataOutput/automatique/serie2/appariements_1_2.jpg">
+            <div class="comparison-image-label">Appariements 1↔2</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie2/appariements_2_3.jpg" alt="Appariements 2↔3" data-fullsize="../dataOutput/automatique/serie2/appariements_2_3.jpg">
+            <div class="comparison-image-label">Appariements 2↔3</div>
+        </div></div><h4>Mosaïque résultante</h4>
+    <div class="figure-container">
+        <img src="../dataOutput/automatique/serie2/mosaique_serie2.jpg" alt="Mosaïque Serie 2 (automatique)" data-fullsize="../dataOutput/automatique/serie2/mosaique_serie2.jpg"
+             onclick="openLightbox(this)" style="max-width:95%;" />
+        <p class="figure-caption">Mosaïque Serie 2 (automatique)</p>
+    </div>
+    <div class="text-block">
+        <div class="text-block-title">📝 Commentaires — Série 2</div>
+        <div class="text-content">La série 2 automatique utilise 4 images de la même scène que la série 1 manuelle (terrasse en bois avec vue<br>
+sur un quartier enneigé). SIFT détecte un grand nombre de points d'intérêt grâce aux textures riches (planches<br>
+de bois, clôtures, bâtiments). Le résultat est comparable à la version manuelle, ce qui montre que l'appariement<br>
+automatique est fiable quand les images ont suffisamment de texture et un chevauchement adéquat.</div>
+    </div><hr class='soft-hr' /><h3>Série 3</h3><h4>Appariements automatiques</h4><div class="comparison-images" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie3/appariements_0_1.jpg" alt="Appariements 0↔1" data-fullsize="../dataOutput/automatique/serie3/appariements_0_1.jpg">
+            <div class="comparison-image-label">Appariements 0↔1</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie3/appariements_1_2.jpg" alt="Appariements 1↔2" data-fullsize="../dataOutput/automatique/serie3/appariements_1_2.jpg">
+            <div class="comparison-image-label">Appariements 1↔2</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie3/appariements_2_3.jpg" alt="Appariements 2↔3" data-fullsize="../dataOutput/automatique/serie3/appariements_2_3.jpg">
+            <div class="comparison-image-label">Appariements 2↔3</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie3/appariements_3_4.jpg" alt="Appariements 3↔4" data-fullsize="../dataOutput/automatique/serie3/appariements_3_4.jpg">
+            <div class="comparison-image-label">Appariements 3↔4</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/automatique/serie3/appariements_4_5.jpg" alt="Appariements 4↔5" data-fullsize="../dataOutput/automatique/serie3/appariements_4_5.jpg">
+            <div class="comparison-image-label">Appariements 4↔5</div>
+        </div></div><h4>Mosaïque résultante</h4>
+    <div class="figure-container">
+        <img src="../dataOutput/automatique/serie3/mosaique_serie3.jpg" alt="Mosaïque Serie 3 (automatique)" data-fullsize="../dataOutput/automatique/serie3/mosaique_serie3.jpg"
+             onclick="openLightbox(this)" style="max-width:95%;" />
+        <p class="figure-caption">Mosaïque Serie 3 (automatique)</p>
+    </div>
+    <div class="text-block">
+        <div class="text-block-title">📝 Commentaires — Série 3</div>
+        <div class="text-content">La mosaïque de la série 3 échoue en grande partie. Les images 2434-2436 et 2466-2468 forment deux groupes<br>
+pris sous des angles très différents (saut de 30 numéros dans les noms de fichiers). La paire 2436↔2466<br>
+présente un changement d'orientation important visible par les lignes d'appariement diagonales. Quand on chaîne<br>
+les homographies à travers cette transition, l'erreur accumulée projette les images éloignées dans un coin<br>
+minuscule du panorama. C'est une limitation connue du chaînage d'homographies planaires sur de grands angles.</div>
+    </div>
+    </section>
+    
+    <section class="image-section">
+        <h2>4. Vos images (20%)</h2>
+        
+    <div class="text-block">
+        <div class="text-block-title">📝 Approche / Conditions de prise de vue</div>
+        <div class="text-content">Les photos ont été prises à main levée avec un téléphone intelligent, sans trépied. Ces photos avaient été prise pour faire<br>
+des panoramique, ce qui est intéressant de pouvoir comparer avec celles fait par mon algorithme. Pour chaque scène, 6 photos<br>
+ont été capturées en pivotant sur place avec un chevauchement d'environ 50% entre chaque prise. La scène 1<br>
+a été prise de nuit lors d'un événement de snowboard (rail jam), et la scène 2 a été prise au coucher du soleil<br>
+devant un pont ferroviaire au bord de l'eau.</div>
+    </div><h3>Scène 1 — RailJam</h3><h4>Quelques appariements</h4><div class="comparison-images" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/ImagePerso/scene1/appariements_0_1.jpg" alt="Appariements 0↔1" data-fullsize="../dataOutput/ImagePerso/scene1/appariements_0_1.jpg">
+            <div class="comparison-image-label">Appariements 0↔1</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/ImagePerso/scene1/appariements_1_2.jpg" alt="Appariements 1↔2" data-fullsize="../dataOutput/ImagePerso/scene1/appariements_1_2.jpg">
+            <div class="comparison-image-label">Appariements 1↔2</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/ImagePerso/scene1/appariements_2_3.jpg" alt="Appariements 2↔3" data-fullsize="../dataOutput/ImagePerso/scene1/appariements_2_3.jpg">
+            <div class="comparison-image-label">Appariements 2↔3</div>
+        </div></div><h4>Mosaïque résultante</h4>
+    <div class="figure-container">
+        <img src="../dataOutput/ImagePerso/scene1/mosaique_scene1.jpg" alt="Panorama Scene 1 — RailJam" data-fullsize="../dataOutput/ImagePerso/scene1/mosaique_scene1.jpg"
+             onclick="openLightbox(this)" style="max-width:95%;" />
+        <p class="figure-caption">Panorama Scene 1 — RailJam</p>
+    </div>
+    <div class="text-block">
+        <div class="text-block-title">📝 Commentaires — Scène 1 (RailJam)</div>
+        <div class="text-content">Le panorama du rail jam est bien assemblé malgré les conditions difficiles : scène de nuit avec éclairage<br>
+artificiel et ombres marquées sur la neige. SIFT a pu trouver suffisamment de points grâce aux textures des<br>
+bannières Burton, de la foule et de la neige. On remarque une légère courbure du rail en forme de « sourire »<br>
+due à la projection planaire sur un champ de vue large, mais les transitions sont propres.</div>
+    </div><hr class='soft-hr' /><h3>Scène 2 — Pont</h3><h4>Quelques appariements</h4><div class="comparison-images" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/ImagePerso/scene2/appariements_0_1.jpg" alt="Appariements 0↔1" data-fullsize="../dataOutput/ImagePerso/scene2/appariements_0_1.jpg">
+            <div class="comparison-image-label">Appariements 0↔1</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/ImagePerso/scene2/appariements_1_2.jpg" alt="Appariements 1↔2" data-fullsize="../dataOutput/ImagePerso/scene2/appariements_1_2.jpg">
+            <div class="comparison-image-label">Appariements 1↔2</div>
+        </div>
+        <div class="comparison-image-item" onclick="openLightbox(this.querySelector('img'))">
+            <img src="../dataOutput/ImagePerso/scene2/appariements_2_3.jpg" alt="Appariements 2↔3" data-fullsize="../dataOutput/ImagePerso/scene2/appariements_2_3.jpg">
+            <div class="comparison-image-label">Appariements 2↔3</div>
+        </div></div><h4>Mosaïque résultante</h4>
+    <div class="figure-container">
+        <img src="../dataOutput/ImagePerso/scene2/mosaique_scene2.jpg" alt="Panorama Scene 2 — Pont" data-fullsize="../dataOutput/ImagePerso/scene2/mosaique_scene2.jpg"
+             onclick="openLightbox(this)" style="max-width:95%;" />
+        <p class="figure-caption">Panorama Scene 2 — Pont</p>
+    </div>
+    <div class="text-block">
+        <div class="text-block-title">📝 Commentaires — Scène 2 (Pont)</div>
+        <div class="text-content">Le panorama du pont au coucher du soleil est le meilleur résultat de mes images personnelles. La structure<br>
+métallique du pont offre beaucoup de points d'intérêt pour SIFT et les reflets sur l'eau sont cohérents entre<br>
+les images. On note une légère variation d'exposition entre les photos (le soleil couchant crée un dégradé),<br>
+mais le mélange pondéré atténue bien cette différence. Le résultat final est un panorama large et naturel.</div>
+    </div>
+    </section>
+    
+    <section class="image-section">
+        <h2>Annexe — Exemples de prompts IA utilisés</h2>
+        
+    <div class="text-block">
+        <div class="text-block-title">📝 Exemple de prompt 1</div>
+        <div class="text-content">Exemple prompt 1:<br>
+Yo<br>
+1. Analyse et comprend le travail que je dois faire en Python, soit TP4.pdf<br>
+2. Analyse le fichier arbo_images.txt qui contient l'arborescence du dossier images qu'il est mentionné dans l'énoncé du projet. Il pourrait t'être utile.<br>
+3. Fait moi un plan détaillé de ce que je vais devoir faire ainsi qu'un plan des différents dossiers et fichiers que je vais devoir créer et faire (arborescence de mon projet).<br>
+4. S'il te manque d'informations pour en compléter certain, dit moi le.<br>
+5. Ne t'occupe pas de la section des questions à répondre dans le rapport, pour l'instant, ni de la section des crédits supplémentaires.<br>
+6. Donne moi un fichier ARBORESCENCE.txt qui montrera l'arborescence que vas avoir mon projet.<br>
+7. Fait moi un plan détaillé (nom des fonctions, noms des variables, et explication de ce que fait chaque fonction)<br>
+8. Je veux que tu sois mon tuteur et que tu favories mon apprentissage, donc ne me donne pas le code complêt. Je veux que te m'aide.<br>
+9. Le seule code que je te permet de me faire au complet sont les fichiers de code qui ne sont pas directement lié au fonction que je<br>
+doit faire dans le projet, par exemple le code pour s'occuper d'importer et d'exporter.<br>
+10. Avant de donner ta réponse, mentionne moi s'il te manque des informations où si quelque chose est pas clair. Si tu as toutes l'informations nécessaire<br>
+pour faire ta réponse, analyse la pour etre certain qu'elle répond à mes critères et aux attentes de TP4.pdf. Tu n'as aucune limite de temps pour répondre.</div>
+    </div><hr class='soft-hr' />
+    <div class="text-block">
+        <div class="text-block-title">📝 Exemple de prompt 2</div>
+        <div class="text-content">Yo<br>
+1) Analyse un exemple exemple_rapport.py de structure du rapport que j'ai déjà fait. Dane le même style.<br>
+2) Fait moi le code python pour faire mon rapport du TP4.pdf<br>
+3) Pour chaque étape du TP4 que je dois faire (sauf les credits supplémentaire), affiche les images original, puis en<br>
+dessous l'image resultante. Ajoute aussi une section de texte pour faire les explication, la où il l'est demandé.<br>
+4) A la fin du rapport ajoute une zone de texte pour mettre les 2 exemple de prompt que j'ai utiliser avec ChatGPT<br>
+6) Concernant les images a mettre dans le rapport, avec l'arborescence de mon projet tu sais où elles se trouvent. Les seules images<br>
+que tu ne connais pas leur nom sont mes deux images persos et voici leur nom:<br>
+Image original 1 ont les nom RailJam_001.jpeg jusqu'a RailJam_006.jpeg, et le nom de l'image resultant est obtenue avec le code main_automatique<br>
+Image original 2 ont les nom Pont_pano_x_001.jpeg jusqu'a Pont_pano_x_006.jpeg, et le nom de l'image resultant est obtenue avec le code main_automatique<br>
+7) Donne moi le code python pour générer ce rapport. Le but est que le correct pour simplement ouvrir le rapport html qui aura été<br>
+générer dans le même dossier que le code du rapport.py (idem pour l'emplacement des images et videos). Il pourra corriger le rapport a partir de la<br>
+8) Pas besoin de mettre les images originales s'il y en a trop, par exemple pour les images personnel.<br>
+<br>
+C'est moi qui générer le rapport.html avec les zone de texte déjà écrisent. C'est zone contiendrons mes réponses. Il faut que j'ecrive<br>
+mes réponses dans le rapport.py pour que le rapport.html soit générer avec mes réponses dedans, donc indique clairement avec des TODO où que je dois ecrire.<br>
+Le rapport.html sera générer dans le dossier TP4/data/dataRapport/, et le code rapport.py sera dans le dossier TP4/code/</div>
+    </div>
+    </section>
+
+    <footer>
+      <p>Photographie algorithmique — TP4 | Panoramas</p>
+    </footer>
+  </div>
+
+  <script>
+    function openLightbox(img) {
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      lightboxImg.src = img.getAttribute('data-fullsize') || img.src;
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(event) {
+      const lightbox = document.getElementById('lightbox');
+      if (event.target === lightbox || event.target.classList.contains('lightbox-close')) {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+    });
+  </script>
+</body>
+</html>

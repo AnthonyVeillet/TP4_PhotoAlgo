@@ -7,20 +7,21 @@ from skimage.transform import ProjectiveTransform
 
 def appariement_automatique(img_ref, img_other, max_ratio=0.8, residual_threshold=2,
                              max_trials=1000):
-    """Appariement automatique de deux images via SIFT + RANSAC.
 
-    Retourne
-    --------
-    H : ndarray (3, 3)
-        Homographie transformant img_other vers img_ref.
-    pts_ref, pts_other : ndarray (n, 2)
-        Points inliers (x, y).
-    all_pts_ref, all_pts_other : ndarray (m, 2)
-        Tous les points appariés.
-    inliers : ndarray (m,) bool
-    """
-    gray1 = rgb2gray(img_ref)
-    gray2 = rgb2gray(img_other)
+    # Gérer les images déjà en niveaux de gris (2D) ou avec canal alpha (4 canaux)
+    if img_ref.ndim == 2:
+        gray1 = img_ref
+    elif img_ref.shape[2] == 4:
+        gray1 = rgb2gray(img_ref[:, :, :3])
+    else:
+        gray1 = rgb2gray(img_ref)
+
+    if img_other.ndim == 2:
+        gray2 = img_other
+    elif img_other.shape[2] == 4:
+        gray2 = rgb2gray(img_other[:, :, :3])
+    else:
+        gray2 = rgb2gray(img_other)
 
     sift1 = SIFT()
     sift1.detect_and_extract(gray1)
@@ -67,13 +68,7 @@ def appariement_automatique(img_ref, img_other, max_ratio=0.8, residual_threshol
 
 def appariement_automatique_paires(images, max_ratio=0.8, residual_threshold=2,
                                      max_trials=1000):
-    """Apparie automatiquement des images consécutives.
 
-    Retourne
-    --------
-    H_paires : dict {(i, i+1): H}
-    info_paires : dict avec détails pour chaque paire.
-    """
     n = len(images)
     H_paires = {}
     info_paires = {}

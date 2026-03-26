@@ -15,6 +15,9 @@ def sauvegarder_image(img, chemin, qualite=90):
     """Sauvegarde une image (float [0,1] ou uint8) en JPG."""
     os.makedirs(os.path.dirname(chemin), exist_ok=True)
     img_clip = np.clip(img, 0, 1)
+    # RGBA -> RGB (JPG ne supporte pas l'alpha)
+    if img_clip.ndim == 3 and img_clip.shape[2] == 4:
+        img_clip = img_clip[:, :, :3]
     img_uint8 = img_as_ubyte(img_clip)
     io.imsave(chemin, img_uint8, quality=qualite)
     print(f"Image sauvegardée : {chemin}")
@@ -71,6 +74,15 @@ def charger_images_dossier(dossier, extensions=('.jpg', '.jpeg', '.png')):
     return images
 
 
+def img_to_rgb(img):
+    """Convertit une image (grayscale, RGB ou RGBA) en RGB 3 canaux."""
+    if img.ndim == 2:
+        return np.stack([img, img, img], axis=-1)
+    elif img.shape[2] == 4:
+        return img[:, :, :3]
+    return img
+
+
 def dessiner_points(img, pts, couleur='r', taille=50):
     """Dessine des points sur une image et retourne la figure."""
     plt.figure(figsize=(10, 8))
@@ -89,8 +101,8 @@ def dessiner_correspondances(img1, img2, pts1, pts2, titre="Correspondances"):
 
     h_max = max(h1, h2)
     canvas = np.zeros((h_max, w1 + w2, 3))
-    canvas[:h1, :w1] = img1[:, :, :3] if img1.ndim == 3 else np.stack([img1]*3, axis=-1)
-    canvas[:h2, w1:w1+w2] = img2[:, :, :3] if img2.ndim == 3 else np.stack([img2]*3, axis=-1)
+    canvas[:h1, :w1] = img_to_rgb(img1)
+    canvas[:h2, w1:w1+w2] = img_to_rgb(img2)
 
     fig, ax = plt.subplots(1, 1, figsize=(16, 8))
     ax.imshow(canvas)

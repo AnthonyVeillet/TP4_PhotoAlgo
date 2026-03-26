@@ -1,20 +1,18 @@
-"""
-Appariement automatique (15%) : SIFT + RANSAC sur les 3 séries de 2-PartieAutomatique.
-"""
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 
 from chemins import AUTO_SERIE1_DIR, AUTO_SERIE2_DIR, AUTO_SERIE3_DIR, OUT_AUTOMATIQUE
 from utils import (charger_image, sauvegarder_image, charger_images_dossier,
-                   dessiner_correspondances, sauvegarder_figure, afficher_image)
+                   dessiner_correspondances, sauvegarder_figure, afficher_image,
+                   img_to_rgb)
 from appariement import appariement_automatique_paires
 from mosaique import creer_mosaique_ponderee, chainer_homographies
 
 
 def traiter_serie_automatique(serie_num, dossier_images, idx_ref=None,
                                 max_ratio=0.8, residual_threshold=2):
-    """Traite une série d'images avec appariement automatique."""
+    # Traite une série d'images avec appariement automatique
     print(f"\n{'=' * 60}")
     print(f"SERIE {serie_num} : Appariement automatique (SIFT + RANSAC)")
     print("=" * 60)
@@ -47,8 +45,8 @@ def traiter_serie_automatique(serie_num, dossier_images, idx_ref=None,
         h2, w2 = images[j].shape[:2]
         h_max = max(h1, h2)
         canvas = np.zeros((h_max, w1 + w2, 3))
-        canvas[:h1, :w1] = images[i][:, :, :3]
-        canvas[:h2, w1:] = images[j][:, :, :3]
+        canvas[:h1, :w1] = img_to_rgb(images[i])
+        canvas[:h2, w1:] = img_to_rgb(images[j])
         ax.imshow(canvas)
 
         inliers = info['inliers']
@@ -78,7 +76,7 @@ def traiter_serie_automatique(serie_num, dossier_images, idx_ref=None,
         plt.tight_layout()
         sauvegarder_figure(fig, os.path.join(save_dir, f'appariements_{i}_{j}.jpg'))
 
-    # Chaîner les homographies vers l'image de référence
+    # Chainer les homographies vers l'image de référence
     homographies = chainer_homographies(H_paires, idx_ref, n_images)
 
     # Créer la mosaïque
@@ -92,21 +90,21 @@ def traiter_serie_automatique(serie_num, dossier_images, idx_ref=None,
 
 
 def main():
-    # ----- Serie 1 : Golden Gate (6 images) -----
+    # ----- Serie 1: Golden Gate (6 images) -----
     mosaique1 = traiter_serie_automatique(
         serie_num=1,
         dossier_images=AUTO_SERIE1_DIR,
         idx_ref=None  # milieu automatique
     )
 
-    # ----- Serie 2 : 4 images -----
+    # ----- Serie 2: 4 images -----
     mosaique2 = traiter_serie_automatique(
         serie_num=2,
         dossier_images=AUTO_SERIE2_DIR,
         idx_ref=None
     )
 
-    # ----- Serie 3 : 6 images -----
+    # ----- Serie 3: 6 images -----
     mosaique3 = traiter_serie_automatique(
         serie_num=3,
         dossier_images=AUTO_SERIE3_DIR,
