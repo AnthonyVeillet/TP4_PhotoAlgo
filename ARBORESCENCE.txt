@@ -1,0 +1,33 @@
+tp4/
+├── code/
+│   ├── main_rechauffement.py      # Réchauffement : applique H1 et H2 à pouliot.jpg
+│   ├── main_manuel.py             # Appariement manuel : mosaïques des 3 séries
+│   ├── main_automatique.py        # Appariement automatique : SIFT + RANSAC
+│   ├── main_vos_images.py         # Vos propres images (TODO: ajuster les chemins)
+│   ├── selection_points.py        # Outil de sélection manuelle de points (matplotlib)
+│   ├── transformation.py          # appliqueTransformation(img, H)
+│   ├── homographie.py             # calculerHomographie(im1_pts, im2_pts)
+│   ├── mosaique.py                # Création et fusion de mosaïques
+│   └── utils.py                   # Utilitaires (chargement, sauvegarde, affichage)
+│
+├── images/                        # (dézipper images.zip ici)
+│   ├── 0-Rechauffement/
+│   │   └── pouliot.jpg
+│   ├── 1-PartieManuelle/
+│   │   ├── Serie1/ (IMG_2415-2417 + pts_serie1/)
+│   │   ├── Serie2/ (IMG_2425-2426)
+│   │   └── Serie3/ (IMG_2409-2411)
+│   ├── 2-PartieAutomatique/
+│   │   ├── Serie1/ (goldengate-00 à 05)
+│   │   ├── Serie2/ (IMG_2415-2418)
+│   │   └── Serie3/ (IMG_2434-2468)
+│   └── 3-ProjCylindrique/         # (bonus seulement)
+│       ├── Serie1/
+│       └── Serie2/
+│
+└── rapport/
+    ├── index.html                 # Page principale du rapport
+    └── images/                    # Images générées par les scripts
+        ├── rechauffement/
+        ├── manuel/
+        └── automatique/
